@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { 
   Phone, 
   Mail, 
@@ -6,11 +7,53 @@ import {
   CreditCard,
   Smartphone,
   Building2,
-  Shield
+  Shield,
+  Send,
+  MessageCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    subject: "",
+    action: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.subject || !formData.action || !formData.message) {
+      toast({ title: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+    setIsSubmitting(true);
+    setTimeout(() => {
+      toast({ title: "Message sent!", description: "We'll get back to you shortly." });
+      setFormData({ fullName: "", email: "", phone: "", subject: "", action: "", message: "" });
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
   return (
     <section id="contact" className="py-20 md:py-28 gradient-warm">
       <div className="container mx-auto px-4">
@@ -26,6 +69,66 @@ const Contact = () => {
           <p className="text-muted-foreground text-lg">
             Reach out to us anytime. Our team is ready to assist you on your journey to recovery.
           </p>
+        </div>
+
+        {/* Talk To Us Form */}
+        <div className="max-w-2xl mx-auto mb-16">
+          <div className="bg-card rounded-2xl p-8 shadow-card border border-border/50">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                <MessageCircle className="w-5 h-5 text-primary" />
+              </div>
+              <h3 className="font-display font-bold text-xl text-foreground">Talk To Us</h3>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name *</Label>
+                  <Input id="fullName" name="fullName" placeholder="Your full name" value={formData.fullName} onChange={handleChange} maxLength={100} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input id="email" name="email" type="email" placeholder="you@example.com" value={formData.email} onChange={handleChange} maxLength={255} />
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone *</Label>
+                  <Input id="phone" name="phone" type="tel" placeholder="+254 7XX XXX XXX" value={formData.phone} onChange={handleChange} maxLength={20} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="subject">Subject *</Label>
+                  <Input id="subject" name="subject" placeholder="Subject of your message" value={formData.subject} onChange={handleChange} maxLength={150} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>I want to *</Label>
+                <Select value={formData.action} onValueChange={(val) => setFormData((prev) => ({ ...prev, action: val }))}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Action" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">Make a General Inquiry</SelectItem>
+                    <SelectItem value="concern">Report a Concern</SelectItem>
+                    <SelectItem value="partnership">Seek Partnership</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="message">Message *</Label>
+                <Textarea id="message" name="message" placeholder="Write your message here..." rows={5} value={formData.message} onChange={handleChange} maxLength={1000} />
+              </div>
+
+              <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+                <Send className="w-4 h-4" />
+                {isSubmitting ? "Sending..." : "Send Email"}
+              </Button>
+            </form>
+          </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -58,8 +161,8 @@ const Contact = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
-                    <a href="mailto:lamumedical@redcross.or.ke" className="text-foreground hover:text-primary transition-colors">
-                      lamumedical@redcross.or.ke
+                    <a href="mailto:lamu.medical@redcross.or.ke" className="text-foreground hover:text-primary transition-colors">
+                      lamu.medical@redcross.or.ke
                     </a>
                   </div>
                 </div>

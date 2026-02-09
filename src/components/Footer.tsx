@@ -69,11 +69,11 @@ const Footer = () => {
               </li>
               <li>
                 <a 
-                  href="mailto:lamumedical@redcross.or.ke"
+                  href="mailto:lamu.medical@redcross.or.ke"
                   className="flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground transition-colors"
                 >
                   <Mail className="w-4 h-4" />
-                  lamumedical@redcross.or.ke
+                  lamu.medical@redcross.or.ke
                 </a>
               </li>
               <li className="flex items-start gap-2 text-primary-foreground/70">
