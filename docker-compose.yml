@@ -1,0 +1,16 @@
+services:
+  lamu-medical:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: lamu-medical
+    ports:
+      - "5000:80"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    external: true
+    name: cbsx_app-network
