@@ -4,6 +4,13 @@ import kenyaRedCrossLogo from "@/assets/kenya-red-cross-logo.png";
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="bg-foreground text-primary-foreground">
       <div className="container mx-auto px-4 py-12 md:py-16">
@@ -43,12 +50,12 @@ const Footer = () => {
                 { label: "Contact", href: "#contact" },
               ].map((link) => (
                 <li key={link.label}>
-                  <a 
-                    href={link.href}
-                    className="text-primary-foreground/70 hover:text-primary-foreground transition-colors"
+                  <button 
+                    onClick={() => scrollToSection(link.href)}
+                    className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-left"
                   >
                     {link.label}
-                  </a>
+                  </button>
                 </li>
               ))}
             </ul>

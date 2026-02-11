@@ -40,15 +40,39 @@ const Contact = () => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!formData.fullName || !formData.email || !formData.phone || !formData.subject || !formData.action || !formData.message) {
       toast({ title: "Please fill in all required fields", variant: "destructive" });
       return;
     }
+
     setIsSubmitting(true);
+
+    // Create mailto link with form data
+    const emailBody = `
+Full Name: ${formData.fullName}
+Email: ${formData.email}
+Phone: ${formData.phone}
+Subject: ${formData.subject}
+Action: ${formData.action}
+
+Message:
+${formData.message}
+    `.trim();
+
+    const mailtoLink = `mailto:lamu.medical@redcross.or.ke?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
+
+    // Open email client
+    window.location.href = mailtoLink;
+
+    // Show success message
     setTimeout(() => {
-      toast({ title: "Message sent!", description: "We'll get back to you shortly." });
+      toast({ 
+        title: "Email client opened", 
+        description: "Please send the email from your email application." 
+      });
       setFormData({ fullName: "", email: "", phone: "", subject: "", action: "", message: "" });
       setIsSubmitting(false);
     }, 1000);
@@ -85,28 +109,28 @@ const Contact = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name *</Label>
-                  <Input id="fullName" name="fullName" placeholder="Your full name" value={formData.fullName} onChange={handleChange} maxLength={100} />
+                  <Input id="fullName" name="fullName" placeholder="Your full name" value={formData.fullName} onChange={handleChange} maxLength={100} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
-                  <Input id="email" name="email" type="email" placeholder="you@example.com" value={formData.email} onChange={handleChange} maxLength={255} />
+                  <Input id="email" name="email" type="email" placeholder="you@example.com" value={formData.email} onChange={handleChange} maxLength={255} required />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone *</Label>
-                  <Input id="phone" name="phone" type="tel" placeholder="+254 7XX XXX XXX" value={formData.phone} onChange={handleChange} maxLength={20} />
+                  <Input id="phone" name="phone" type="tel" placeholder="+254 7XX XXX XXX" value={formData.phone} onChange={handleChange} maxLength={20} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject *</Label>
-                  <Input id="subject" name="subject" placeholder="Subject of your message" value={formData.subject} onChange={handleChange} maxLength={150} />
+                  <Input id="subject" name="subject" placeholder="Subject of your message" value={formData.subject} onChange={handleChange} maxLength={150} required />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>I want to *</Label>
-                <Select value={formData.action} onValueChange={(val) => setFormData((prev) => ({ ...prev, action: val }))}>
+                <Select value={formData.action} onValueChange={(val) => setFormData((prev) => ({ ...prev, action: val }))} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Action" />
                   </SelectTrigger>
@@ -120,12 +144,12 @@ const Contact = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="message">Message *</Label>
-                <Textarea id="message" name="message" placeholder="Write your message here..." rows={5} value={formData.message} onChange={handleChange} maxLength={1000} />
+                <Textarea id="message" name="message" placeholder="Write your message here..." rows={5} value={formData.message} onChange={handleChange} maxLength={1000} required />
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                 <Send className="w-4 h-4" />
-                {isSubmitting ? "Sending..." : "Send Email"}
+                {isSubmitting ? "Opening Email Client..." : "Send Email"}
               </Button>
             </form>
           </div>
