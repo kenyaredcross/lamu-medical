@@ -10,7 +10,7 @@ const Header = () => {
     { label: "Home", href: "#home" },
     { label: "Services", href: "#services" },
     { label: "About Us", href: "#about" },
-    { label: "Innovation Lab", href: "#innovation" },
+    { label: "Innovation Lab", href: "https://iome.ke" },
     { label: "Contact", href: "#contact" },
   ];
 
