@@ -50,12 +50,16 @@ const Footer = () => {
                 { label: "Contact", href: "#contact" },
               ].map((link) => (
                 <li key={link.label}>
-                  <button 
-                    onClick={() => scrollToSection(link.href)}
-                    className="text-primary-foreground/70 hover:text-primary-foreground transition-colors text-left"
+                  <a 
+                    href={link.href}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      scrollToSection(link.href);
+                    }}
+                    className="text-primary-foreground/70 hover:text-primary-foreground transition-colors block"
                   >
                     {link.label}
-                  </button>
+                  </a>
                 </li>
               ))}
             </ul>
