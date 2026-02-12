@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { db } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -43,39 +45,79 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validate all fields
     if (!formData.fullName || !formData.email || !formData.phone || !formData.subject || !formData.action || !formData.message) {
-      toast({ title: "Please fill in all required fields", variant: "destructive" });
+      toast({ 
+        title: "Please fill in all required fields", 
+        variant: "destructive" 
+      });
       return;
     }
 
     setIsSubmitting(true);
 
-    // Create mailto link with form data
-    const emailBody = `
-Full Name: ${formData.fullName}
-Email: ${formData.email}
-Phone: ${formData.phone}
-Subject: ${formData.subject}
-Action: ${formData.action}
-
-Message:
-${formData.message}
-    `.trim();
-
-    const mailtoLink = `mailto:lamu.medical@redcross.or.ke?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(emailBody)}`;
-
-    // Open email client
-    window.location.href = mailtoLink;
-
-    // Show success message
-    setTimeout(() => {
-      toast({ 
-        title: "Email client opened", 
-        description: "Please send the email from your email application." 
+    try {
+      // Save to Firebase Firestore
+      const docRef = await addDoc(collection(db, "contact_submissions"), {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.subject,
+        action: formData.action,
+        message: formData.message,
+        timestamp: serverTimestamp(),
+        status: "new", // Track if it's been handled
       });
-      setFormData({ fullName: "", email: "", phone: "", subject: "", action: "", message: "" });
+
+      console.log("Document written with ID: ", docRef.id);
+
+      // Send email notification to lamu.medical@redcross.or.ke
+      // This will be handled by Google Apps Script
+      await fetch(
+        "https://script.google.com/macros/s/AKfycbwNvppB4DNLxaCKszqxYa37fatZtUpsA4UOfKMCO1zpmI5UmVi4TIer6v0hvGfRJxCVeA/exec",
+        {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fullName: formData.fullName,
+            email: formData.email,
+            phone: formData.phone,
+            subject: formData.subject,
+            action: formData.action,
+            message: formData.message,
+            timestamp: new Date().toISOString(),
+          }),
+        }
+      );
+
+      toast({ 
+        title: "Message sent successfully!", 
+        description: "We'll get back to you shortly." 
+      });
+      
+      // Clear form
+      setFormData({ 
+        fullName: "", 
+        email: "", 
+        phone: "", 
+        subject: "", 
+        action: "", 
+        message: "" 
+      });
+      
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({ 
+        title: "Failed to send message", 
+        description: "Please try again or contact us directly at lamu.medical@redcross.or.ke",
+        variant: "destructive" 
+      });
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -109,28 +151,71 @@ ${formData.message}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="fullName">Full Name *</Label>
-                  <Input id="fullName" name="fullName" placeholder="Your full name" value={formData.fullName} onChange={handleChange} maxLength={100} required />
+                  <Input 
+                    id="fullName" 
+                    name="fullName" 
+                    placeholder="Your full name" 
+                    value={formData.fullName} 
+                    onChange={handleChange} 
+                    maxLength={100} 
+                    required 
+                    disabled={isSubmitting}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email *</Label>
-                  <Input id="email" name="email" type="email" placeholder="you@example.com" value={formData.email} onChange={handleChange} maxLength={255} required />
+                  <Input 
+                    id="email" 
+                    name="email" 
+                    type="email" 
+                    placeholder="you@example.com" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    maxLength={255} 
+                    required 
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone *</Label>
-                  <Input id="phone" name="phone" type="tel" placeholder="+254 7XX XXX XXX" value={formData.phone} onChange={handleChange} maxLength={20} required />
+                  <Input 
+                    id="phone" 
+                    name="phone" 
+                    type="tel" 
+                    placeholder="+254 7XX XXX XXX" 
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                    maxLength={20} 
+                    required 
+                    disabled={isSubmitting}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="subject">Subject *</Label>
-                  <Input id="subject" name="subject" placeholder="Subject of your message" value={formData.subject} onChange={handleChange} maxLength={150} required />
+                  <Input 
+                    id="subject" 
+                    name="subject" 
+                    placeholder="Subject of your message" 
+                    value={formData.subject} 
+                    onChange={handleChange} 
+                    maxLength={150} 
+                    required 
+                    disabled={isSubmitting}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label>I want to *</Label>
-                <Select value={formData.action} onValueChange={(val) => setFormData((prev) => ({ ...prev, action: val }))} required>
+                <Select 
+                  value={formData.action} 
+                  onValueChange={(val) => setFormData((prev) => ({ ...prev, action: val }))} 
+                  required
+                  disabled={isSubmitting}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Action" />
                   </SelectTrigger>
@@ -144,12 +229,22 @@ ${formData.message}
 
               <div className="space-y-2">
                 <Label htmlFor="message">Message *</Label>
-                <Textarea id="message" name="message" placeholder="Write your message here..." rows={5} value={formData.message} onChange={handleChange} maxLength={1000} required />
+                <Textarea 
+                  id="message" 
+                  name="message" 
+                  placeholder="Write your message here..." 
+                  rows={5} 
+                  value={formData.message} 
+                  onChange={handleChange} 
+                  maxLength={1000} 
+                  required 
+                  disabled={isSubmitting}
+                />
               </div>
 
               <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
                 <Send className="w-4 h-4" />
-                {isSubmitting ? "Opening Email Client..." : "Send Email"}
+                {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>
           </div>
